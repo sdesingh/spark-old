@@ -58,3 +58,41 @@ export async function deleteItem(req: Request, res: Response) {
   const result = await Message.sendMessage(TASK_QUEUE, "DELETE_ITEM", payload);
   res.json(result);
 }
+
+export async function likeItem(req: Request, res: Response) {
+  if (!req.session!.username) {
+    res.json(requestError("You must be logged in to do that."));
+    return;
+  }
+
+  const itemid = req.params.id;
+  const shouldLike = req.body.like === undefined ? true : req.body.like;
+  const username = req.session!.username;
+
+  const payload = {
+    username,
+    itemid,
+    shouldLike
+  };
+
+  const result = await Message.sendMessage(TASK_QUEUE, "LIKE_ITEM", payload);
+  res.json(result);
+}
+
+export async function getItemsByUser(req: Request, res: Response) {
+  const username = req.params.username;
+  const limit = req.body.limit;
+
+  const payload = {
+    username,
+    limit
+  };
+
+  const result = await Message.sendMessage(
+    TASK_QUEUE,
+    "GET_ITEMS_BY_USER",
+    payload
+  );
+
+  res.json(result);
+}

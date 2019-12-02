@@ -96,7 +96,7 @@ export async function followUser(req: Request, res: Response) {
 
   let username = req.session!.username;
   let usernameToFollow = req.body.username;
-  let followUser = req.body.follow;
+  let followUser = req.body.follow === undefined ? true : req.body.follow;
 
   let payload = {
     username,
@@ -105,6 +105,42 @@ export async function followUser(req: Request, res: Response) {
   };
 
   let result = await Message.sendMessage(USER_QUEUE, "FOLLOW_USER", payload);
+
+  res.json(result);
+}
+
+export async function getFollowers(req: Request, res: Response) {
+  const username = req.params.username;
+  const limit = req.body.limit;
+
+  const payload = {
+    username,
+    limit
+  };
+
+  const result = await Message.sendMessage(
+    "user_queue",
+    "GET_FOLLOWERS",
+    payload
+  );
+
+  res.json(result);
+}
+
+export async function getFollowing(req: Request, res: Response) {
+  const username = req.params.username;
+  const limit = req.body.limit;
+
+  const payload = {
+    username,
+    limit
+  };
+
+  const result = await Message.sendMessage(
+    "user_queue",
+    "GET_FOLLOWING",
+    payload
+  );
 
   res.json(result);
 }

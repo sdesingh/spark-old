@@ -34,6 +34,10 @@ const getItem = async (payload: any) => {
   }
 };
 
+const getItemsByUser = async (payload: any) => {
+  return repo.getItemsByUser(payload.username, payload.limit);
+};
+
 const invalidRequest = (payload: any) => {
   logger.warn(`INVALID_REQUEST [${payload.actionName}]`);
   return statusError("Invalid Request Made...", null);
@@ -41,6 +45,7 @@ const invalidRequest = (payload: any) => {
 
 export const controller: { [action: string]: Function } = {
   GET_ITEM: getItem,
+  GET_ITEMS_BY_USER: getItemsByUser,
   ADD_ITEM: addItem,
   DELETE_ITEM: deleteItem,
   LIKE_ITEM: likeItem,

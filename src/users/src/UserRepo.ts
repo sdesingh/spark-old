@@ -121,6 +121,8 @@ export async function loginUser(username: string, password: string) {
 
   // Check if password is correct.
   if (user.password === password) {
+    if (!user.isVerified) return statusError("You must verify this account.");
+
     return statusOk("Successfully logged in.", { user });
   } else {
     return statusError("Invalid credentials.", null);
@@ -177,7 +179,7 @@ export async function followUser(
   }
 }
 
-// TODO TODO TODO
+/** ITEM ACTIONS */
 export async function addItem(username: string, itemid: string) {
   const user = await getByUsername(username);
 
@@ -194,7 +196,6 @@ export async function addItem(username: string, itemid: string) {
   }
 }
 
-// TODO TODO TODO
 export async function deleteItem(username: string, itemid: string) {
   const user = await getByUsername(username);
 
@@ -211,11 +212,72 @@ export async function deleteItem(username: string, itemid: string) {
   }
 }
 
-// TODO TODO TODO
-export async function likeItem(itemid: string, shouldLike: boolean) {}
+export async function likeItem(
+  username: string,
+  itemid: string,
+  shouldLike: boolean
+) {
+  const user = await getByUsername(username);
+
+  if (!user) return statusError(`User [${username}] doesn't exist.`);
+  else {
+    // Add item to likes.
+    if (shouldLike) {
+      // Check if already liked.
+      if (user.likedItems.includes(itemid)) {
+        return statusOk(`${username} already liked item with ID: ${itemid}`);
+      } else {
+        user.likedItems.push(itemid);
+        await user.save();
+        return statusOk(`${username} liked item with ID: ${itemid}`);
+      }
+    } else {
+      if (!user.likedItems.includes(itemid)) {
+        return statusOk(`${username} already unliked item with ID: ${itemid}`);
+      } else {
+        const itemIndex = user.likedItems.indexOf(itemid);
+        user.likedItems.splice(itemIndex, 1);
+        await user.save();
+        return statusOk(`${username} unliked item with ID: ${itemid}`);
+      }
+    }
+  }
+}
 
 // TODO TODO TODO
-export async function getFollowersOfUser(id: string) {}
+export async function getUserFollowers(username: string, limit?: number) {
+  const user = await getByUsername(username);
+
+  if (!user) return statusError(`User ${username} doesn't exist.`);
+  else {
+    const userFollowers = user.followers;
+
+    let itemLimit = limit === undefined ? 50 : limit;
+    itemLimit = itemLimit > 200 ? 200 : itemLimit;
+
+    const followers = userFollowers.slice(0, itemLimit);
+
+    return statusOk(`Successfully retrieved ${username} followers.`, {
+      followers
+    });
+  }
+}
 
 // TODO TODO TODO
-export async function getUserFollowing(id: string) {}
+export async function getUserFollowing(username: string, limit?: number) {
+  const user = await getByUsername(username);
+
+  if (!user) return statusError(`User ${username} doesn't exist.`);
+  else {
+    const userFollowing = user.following;
+
+    let itemLimit = limit === undefined ? 50 : limit;
+    itemLimit = itemLimit > 200 ? 200 : itemLimit;
+
+    const following = userFollowing.slice(0, itemLimit);
+
+    return statusOk(`Successfully retrieved ${username} following.`, {
+      following
+    });
+  }
+}

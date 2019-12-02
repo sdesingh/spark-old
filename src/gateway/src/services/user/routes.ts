@@ -12,6 +12,16 @@ export default [
     handler: controller.getUser
   },
   {
+    path: "/user/:username/followers",
+    method: "get",
+    handler: controller.getFollowers
+  },
+  {
+    path: "/user/:username/following",
+    method: "get",
+    handler: controller.getFollowing
+  },
+  {
     path: "/verify",
     method: "post",
     handler: controller.verifyUser

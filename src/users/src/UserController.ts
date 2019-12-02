@@ -29,12 +29,24 @@ const followUser = async (payload: any) => {
   );
 };
 
+const getFollowers = async (payload: any) => {
+  return repo.getUserFollowers(payload.username, payload.limit);
+};
+
+const getFollowing = async (payload: any) => {
+  return repo.getUserFollowing(payload.username, payload.limit);
+};
+
 const addItem = async (payload: any) => {
   return repo.addItem(payload.username, payload.itemid);
 };
 
 const deleteItem = async (payload: any) => {
   return repo.deleteItem(payload.username, payload.itemid);
+};
+
+const likeItem = async (payload: any) => {
+  return repo.likeItem(payload.username, payload.itemid, payload.shouldLike);
 };
 
 const loginUser = async (payload: any) => {
@@ -49,13 +61,18 @@ const invalidRequest = () => {
 export const controller: { [action: string]: Function } = {
   /** ACCOUNT ACTIONS */
   ADD_USER: addUser,
-  GET_BY_USERNAME: getByUsername,
   VERIFY_USER: verifyUser,
+  LOGIN_USER: loginUser,
+  GET_BY_USERNAME: getByUsername,
+  GET_FOLLOWERS: getFollowers,
+  GET_FOLLOWING: getFollowing,
 
   /** USER ACTIONS */
   FOLLOW_USER: followUser,
-  LOGIN_USER: loginUser,
+
+  /** ITEM ACTIONS */
   ADD_ITEM: addItem,
   DELETE_ITEM: deleteItem,
+  LIKE_ITEM: likeItem,
   INVALID: invalidRequest
 };

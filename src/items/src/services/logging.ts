@@ -10,10 +10,10 @@ export const logger = winston.createLogger({
     format.splat(),
     format.json()
   ),
-  defaultMeta: { service: "spark.user" },
+  defaultMeta: { service: "spark.item" },
   transports: [
-    new transports.File({ filename: "user.error.log", level: "error" }),
-    new transports.File({ filename: "user.combined.log" })
+    new transports.File({ filename: "item.error.log", level: "error" }),
+    new transports.File({ filename: "item.combined.log" })
   ]
 });
 
