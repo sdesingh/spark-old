@@ -24,10 +24,16 @@ const associateMediaWith = async (payload: any) => {
   return repo.associateMediaWith(payload.itemid, payload.associateid);
 };
 
+const invalidRequest = () => {
+  logger.warn("Invalid request made.");
+  return statusError("Invalid Request Made...", null);
+};
+
 export const controller: { [action: string]: Function } = {
   ADD_MEDIA: addMedia,
   ASSOCIATE_MEDIA_WITH: associateMediaWith,
   DELETE_MEDIA: deleteMedia,
   GET_MEDIA: getMedia,
-  RESET: repo.reset
+  RESET: repo.reset,
+  INVALID: invalidRequest
 };
