@@ -4,8 +4,6 @@ import Timer from "./services/timer";
 import { statusError, statusOk } from "./services/responseObjects";
 import * as Message from "./services/messaging";
 
-Message.initMessaging();
-
 const addItem = async (payload: any) => {
   return repo.addItem(
     payload.username,
