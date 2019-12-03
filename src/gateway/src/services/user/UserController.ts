@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import * as Message from "../messaging";
 import { requestSuccess, requestError } from "../../utils/statusObjects";
-import e = require("express");
+import axios from "axios";
 
 const USER_QUEUE = "user_queue";
 
@@ -19,6 +19,12 @@ export async function createUser(req: Request, res: Response) {
   let result = await Message.sendMessage(USER_QUEUE, "ADD_USER", payload);
 
   if (result.status === "OK") {
+    axios.post(process.env.MAILER_URL + "/sendmail", {
+      from: "Twitter <mangohut>",
+      to: email,
+      subject: "Verification Key",
+      text: `validation key: <${result.data.user.verificationKey}>`
+    });
     res.json(requestSuccess(`Successfully added user ${username}.`));
   } else {
     res.json(
