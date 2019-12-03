@@ -9,7 +9,7 @@ export const statusOk = (message: string, data?: any) => {
 export const statusError = (message: string, err?: any) => {
   return {
     status: "error",
-    message,
+    error: message,
     err
   };
 };
