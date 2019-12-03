@@ -5,6 +5,7 @@ import { connectDb } from "./services/mongo";
 import Timer from "./services/timer";
 import { logger } from "./services/logging";
 import { statusError } from "./services/responseObjects";
+import { initMessaging } from "./services/messaging";
 // Load environment vars.
 env.config();
 
@@ -88,6 +89,7 @@ async function start() {
   console.log("Starting application...");
   await connectMessaging();
   await connectDb();
+  await initMessaging();
   console.log("Successfully started application.");
 }
 
