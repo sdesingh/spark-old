@@ -1,5 +1,5 @@
 import axios from "axios";
-import { requestError } from "../utils/statusObjects";
+import { requestError, requestSuccess } from "../utils/statusObjects";
 import { logger } from "./logging";
 
 export async function sendMessage(
@@ -18,6 +18,6 @@ export async function sendMessage(
     return data;
   } catch (err) {
     logger.error(`[${actionName}]`, err);
-    return requestError(`Unable to fulfill request [${actionName}]`);
+    return requestSuccess(`Unable to fulfill request [${actionName}]`);
   }
 }
