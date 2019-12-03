@@ -8,6 +8,6 @@ export const requestError = (error: string): any => {
 export const requestSuccess = (message: string): any => {
   return {
     status: "OK",
-    message
+    error: message
   };
 };
