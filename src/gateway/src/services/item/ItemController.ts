@@ -27,7 +27,15 @@ export async function addItem(req: Request, res: Response) {
 
   const result = await Message.sendMessage(TASK_QUEUE, "ADD_ITEM", payload);
 
-  res.json(result);
+  if (result.status === "OK") {
+    res.json({
+      status: "OK",
+      message: result.message,
+      id: result.data.id
+    });
+  } else {
+    res.json(result);
+  }
 }
 
 export async function getItem(req: Request, res: Response) {
@@ -38,7 +46,30 @@ export async function getItem(req: Request, res: Response) {
 
   const result = await Message.sendMessage(TASK_QUEUE, "GET_ITEM", payload);
 
-  res.json(result);
+  if (result.status === "OK") {
+    const doc = result.data.item;
+    const item = {
+      id: doc._id,
+      childType: doc.type,
+      username: doc.user,
+      content: doc.content,
+      parent: doc.parent,
+      media: doc.media,
+      property: {
+        likes: doc.likes
+      },
+      retweeted: doc.retweeted,
+      timestamp: doc.timestamp
+    };
+
+    res.json({
+      status: "OK",
+      message: result.message,
+      item
+    });
+  } else {
+    res.json(result);
+  }
 }
 
 export async function deleteItem(req: Request, res: Response) {
@@ -94,5 +125,13 @@ export async function getItemsByUser(req: Request, res: Response) {
     payload
   );
 
-  res.json(result);
+  if (result.status === "OK") {
+    res.json({
+      status: "OK",
+      message: result.message,
+      items: result.data.items
+    });
+  } else {
+    res.json(result);
+  }
 }

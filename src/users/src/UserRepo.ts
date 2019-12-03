@@ -45,24 +45,24 @@ export async function verifyUser(email: string, key: string) {
   const user = await getByEmail(email);
 
   if (!user) {
-    return statusError("Couldn't verify user.", null);
+    return statusError(`User with email ${email} doesn't exist.`);
   }
   // user exists. verify.
   else {
     // Check if user already verified.
     if (user.isVerified) {
-      return statusOk("User already verified.", null);
+      return statusOk(`User ${user.username} is already verified.`);
     }
 
     // Check if provided key matches.
     if (user.verificationKey === key || key === process.env.SECRET_KEY!) {
       user.isVerified = true;
       user.save();
-      return statusOk("User was successfully verified.", null);
+      return statusOk(`User ${user.username} was successfully verified.`);
     }
     // Key Doesn't Match
     else {
-      return statusError("Invalid key provided.", null);
+      return statusError("Invalid key provided.");
     }
   }
 }

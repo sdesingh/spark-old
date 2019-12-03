@@ -5,7 +5,7 @@ export interface IItemModel extends Document {
   user: String;
   parent: IItemModel | null;
   type: ItemType;
-  media: IMediaModel[];
+  media: String[];
   timestamp: Number;
   retweeted: number;
   likes: number;

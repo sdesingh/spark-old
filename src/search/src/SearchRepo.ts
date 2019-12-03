@@ -11,6 +11,7 @@ export async function search(searchParams: any) {
     limit,
     q,
     username,
+    loggedInUser,
     hasMedia,
     following,
     replies,
@@ -20,7 +21,7 @@ export async function search(searchParams: any) {
 
   // Set search limit.
   let searchLimit = limit !== undefined ? limit : 25;
-  searchLimit = limit > 200 ? 200 : limit;
+  searchLimit = searchLimit > 200 ? 200 : searchLimit;
 
   const currentTime = parseInt((new Date().getTime() / 1000).toFixed(0));
   let searchTimestamp = timestamp !== undefined ? timestamp : currentTime;
@@ -29,10 +30,6 @@ export async function search(searchParams: any) {
   let showReplies = replies !== undefined ? replies : true;
 
   let showFromFollowing = following !== undefined ? following : true;
-
-  if (username && following === undefined) {
-    showFromFollowing = false;
-  }
 
   const must: any[] = [];
   const must_not: any[] = [];
@@ -43,7 +40,7 @@ export async function search(searchParams: any) {
   }
 
   // Search for posts by specific user.
-  if (username !== undefined && !showFromFollowing) {
+  if (username !== undefined) {
     must.push({ match: { user: username } });
   }
 
@@ -52,10 +49,14 @@ export async function search(searchParams: any) {
     must_not.push({ match: { type: "reply" } });
   }
 
+  // Specific parent.
+  if (parent !== undefined && replies) {
+    must.push({ match: { parent } });
+  }
+
   // Show from following
   if (showFromFollowing) {
-    console.log("showing from following");
-    if (username === undefined)
+    if (loggedInUser === undefined)
       return statusError(
         "Unable to make query. Username undefined for following."
       );
@@ -63,7 +64,7 @@ export async function search(searchParams: any) {
     const followingResult = await Message.sendMessage(
       "user_queue",
       "GET_FOLLOWING",
-      { username }
+      { username: loggedInUser }
     );
 
     if (followingResult.status !== "OK")
@@ -87,8 +88,6 @@ export async function search(searchParams: any) {
   // Time filter.
   must.push({ range: { timestamp: { lte: searchTimestamp } } });
 
-  // console.log(JSON.stringify(query));
-
   try {
     const { body } = await client.search({
       index: "items",
@@ -105,7 +104,16 @@ export async function search(searchParams: any) {
       size: searchLimit
     });
 
-    return statusOk("Retrieved search results.", { results: body });
+    // Format results.
+
+    const items: any[] = [];
+
+    body.hits.hits.forEach((itemDoc: any) => {
+      const document = itemDoc._source;
+      items.push(convertSearchItemDoc(document));
+    });
+
+    return statusOk("Retrieved search results.", { items });
   } catch (err) {
     console.log(err);
     return statusOk("Unable to get search results", err);
@@ -145,4 +153,20 @@ export async function reset() {
   } catch (err) {
     return statusError("Couldn't delete indices.", err);
   }
+}
+
+function convertSearchItemDoc(doc: any) {
+  return {
+    id: doc.id,
+    childType: doc.type,
+    username: doc.user,
+    content: doc.content,
+    parent: doc.parent,
+    media: doc.media,
+    property: {
+      likes: doc.likes
+    },
+    retweeted: doc.retweeted,
+    timestamp: doc.timestamp
+  };
 }

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as Message from "../messaging";
 import { requestSuccess, requestError } from "../../utils/statusObjects";
+import e = require("express");
 
 const USER_QUEUE = "user_queue";
 
@@ -17,7 +18,13 @@ export async function createUser(req: Request, res: Response) {
 
   let result = await Message.sendMessage(USER_QUEUE, "ADD_USER", payload);
 
-  res.json(result);
+  if (result.status === "OK") {
+    res.json(requestSuccess(`Successfully added user ${username}.`));
+  } else {
+    res.json(
+      requestError(`Unable to create user ${username}, please check inputs.`)
+    );
+  }
 }
 
 export async function verifyUser(req: Request, res: Response) {
@@ -46,7 +53,22 @@ export async function getUser(req: Request, res: Response) {
     payload
   );
 
-  res.json(result);
+  if (result.status !== "OK") {
+    res.json(result);
+  } else {
+    const userDoc = result.data.user;
+    const user = {
+      username: userDoc.username,
+      email: userDoc.email,
+      followers: userDoc.followers.length,
+      following: userDoc.following.length
+    };
+    res.json({
+      status: "OK",
+      message: result.message,
+      user
+    });
+  }
 }
 
 export async function loginUser(req: Request, res: Response) {
@@ -65,8 +87,8 @@ export async function loginUser(req: Request, res: Response) {
     req.session!.username = result.data.user.username;
     req.session!.userid = result.data.user._id;
 
-    const response = requestSuccess("Logged in successfully");
-    response["user"] = result.data.user;
+    const response = requestSuccess(`User ${username} successfully logged in.`);
+    // response["user"] = result.data.user;
     res.json(response);
   }
   // Login failure.
@@ -124,7 +146,15 @@ export async function getFollowers(req: Request, res: Response) {
     payload
   );
 
-  res.json(result);
+  if (result.status === "OK") {
+    res.json({
+      status: "OK",
+      message: result.message,
+      users: result.data.followers
+    });
+  } else {
+    res.json(result);
+  }
 }
 
 export async function getFollowing(req: Request, res: Response) {
@@ -142,7 +172,15 @@ export async function getFollowing(req: Request, res: Response) {
     payload
   );
 
-  res.json(result);
+  if (result.status === "OK") {
+    res.json({
+      status: "OK",
+      message: result.message,
+      users: result.data.following
+    });
+  } else {
+    res.json(result);
+  }
 }
 
 export function userIsLoggedIn(req: Request): boolean {

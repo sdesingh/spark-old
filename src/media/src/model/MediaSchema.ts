@@ -8,7 +8,7 @@ export interface IMediaModel extends Document {
   filename: string;
   filesize: number;
   mimetype: string;
-  itemAssociatedWith: IItemModel;
+  itemAssociatedWith: String;
 }
 
 let getDate = () => new Date();
@@ -18,9 +18,8 @@ export var MediaSchema: Schema = new Schema({
     type: String
   },
   itemAssociatedWith: {
-    type: Schema.Types.ObjectId,
-    required: false,
-    ref: "Item"
+    type: String,
+    default: null
   },
   uploadedOn: {
     type: Date,

@@ -24,19 +24,64 @@ export async function addItem(
     media
   };
 
+  // Check if media has been used.
+  if (media) {
+    const mediaRequests: Promise<any>[] = [];
+    media.forEach((itemid: string) =>
+      mediaRequests.push(
+        Message.sendMessage("media_queue", "GET_MEDIA", { itemid })
+      )
+    );
+
+    const mediaItems: any[] = await Promise.all(mediaRequests);
+
+    for (let itemResult of mediaItems) {
+      if (itemResult.status !== "OK") {
+        return statusError(`Can't associate media that doesn't exist.`);
+      }
+
+      const item = itemResult.data.media;
+
+      if (item.itemAssociatedWith !== null) {
+        return statusError(
+          `Media with ID: ${item._id} is already being used by another item.`
+        );
+      } else if (item.uploadedBy !== username) {
+        return statusError(
+          `Media with ID: ${item._id} is owned by another user.`
+        );
+      }
+    }
+  }
+
+  // Check if parent exists.
+  if (parentid) {
+    const parentItem = await Item.findById(parentid);
+    if (!parentItem) {
+      return statusError("Tried to add parent which doesn't exist.");
+    }
+  }
+
   try {
     // Create item.
     const createdItem = await Item.create(itemDoc);
 
     // Add item to the user.
-    const result = await Message.sendMessage("user_queue", "ADD_ITEM", {
+    Message.sendMessage("user_queue", "ADD_ITEM", {
       username,
       itemid: createdItem._id
     });
 
+    if (createdItem.type === ItemType.RETWEET) {
+      const parentItem = await Item.findById(parentid);
+      parentItem!.retweeted += 1;
+      parentItem!.save().then(val => {});
+    }
+
     const doc = {
       id: createdItem._id,
       parent: createdItem.parent,
+      media: createdItem.media,
       hasMedia: createdItem.media.length !== 0,
       timestamp: createdItem.timestamp,
       likes: createdItem.likes,
@@ -48,12 +93,21 @@ export async function addItem(
 
     Message.sendMessage("search_queue", "INDEX_ITEM", { doc });
 
-    if (result.status === "OK") {
-      return statusOk("Successfully added item", { id: createdItem._id });
-    } else {
-      Item.findByIdAndDelete(createdItem._id);
-      return statusError("Unable to add item.", result.message);
-    }
+    // Associate media items.
+    const associateRequests: any[] = [];
+
+    createdItem.media.forEach(itemid =>
+      associateRequests.push(
+        Message.sendMessage("media_queue", "ASSOCIATE_MEDIA_WITH", {
+          itemid,
+          associateid: createdItem._id
+        })
+      )
+    );
+
+    Promise.all(associateRequests);
+
+    return statusOk("Successfully added item", { id: createdItem._id });
   } catch (err) {
     return statusError("Unable to add item.", err);
   }
@@ -71,26 +125,36 @@ export async function deleteItem(username: string, itemid: string) {
     // Item owned by user. Delete.
     if (item.user === username) {
       // Delete item from user.
-      const result = await Message.sendMessage("user_queue", "DELETE_ITEM", {
+      Message.sendMessage("user_queue", "DELETE_ITEM", {
         username,
         itemid
       });
 
-      if (result.status === "OK") {
-        // Delete item from db.
-        await Promise.all([
-          Item.findByIdAndDelete(itemid),
-          Message.sendMessage("search_queue", "DELETE_ITEM", { itemid })
-        ]);
-        return statusOk(`Item with ID: ${itemid} successfully deleted.`);
+      // Reduce number of retweets.
+      if (item.type === ItemType.RETWEET) {
+        const parentItem = await Item.findById(item.parent);
+        parentItem!.retweeted -= 1;
+        parentItem!.save().then(val => {});
       }
-      // User was unable to delete the item.
-      else {
-        return statusError(
-          `Unable to delete item with ID: ${itemid}`,
-          result.message
-        );
-      }
+
+      // Delete all associated media items.
+      const deleteMediaRequests: any[] = [];
+      item.media.forEach(itemid =>
+        deleteMediaRequests.push(
+          Message.sendMessage("media_queue", "DELETE_MEDIA", {
+            itemid
+          })
+        )
+      );
+
+      // Delete item from db.
+      Promise.all([
+        Item.findByIdAndDelete(itemid),
+        Message.sendMessage("search_queue", "DELETE_ITEM", { itemid }),
+        ...deleteMediaRequests
+      ]);
+
+      return statusOk(`Item with ID: ${itemid} successfully deleted.`);
     }
     // Item not owned by that username.
     else {

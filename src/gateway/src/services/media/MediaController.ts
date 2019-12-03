@@ -25,7 +25,15 @@ export async function addMedia(req: Request, res: Response) {
     payload
   );
 
-  res.json(mediaResult);
+  if (mediaResult.status === "OK") {
+    res.json({
+      status: "OK",
+      message: mediaResult.message,
+      id: mediaResult.data.item._id
+    });
+  } else {
+    res.json(mediaResult);
+  }
 }
 
 export async function getMedia(req: Request, res: Response) {
@@ -36,9 +44,11 @@ export async function getMedia(req: Request, res: Response) {
 
   try {
     if (mediaMeta.status !== "OK") {
-      res.json(
-        requestError(`Couldn't retrieve media item with the ID: ${itemid}.`)
-      );
+      res
+        .status(404)
+        .json(
+          requestError(`Couldn't retrieve media item with the ID: ${itemid}.`)
+        );
     } else {
       const filename = mediaMeta.data.media.filename;
       const fileType = mediaMeta.data.media.mimetype;
@@ -47,6 +57,8 @@ export async function getMedia(req: Request, res: Response) {
     }
   } catch (err) {
     console.log(err);
-    res.json(requestError(`Unable to retrieve item with ID: ${itemid}`));
+    res
+      .status(404)
+      .json(requestError(`Unable to retrieve item with ID: ${itemid}`));
   }
 }

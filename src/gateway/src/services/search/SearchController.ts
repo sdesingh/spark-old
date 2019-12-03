@@ -7,13 +7,16 @@ export async function search(req: Request, res: Response) {
     searchParams: req.body
   };
 
-  if (req.body.following === true) {
-    payload.searchParams.username = req.session!.username;
+  // User is logged in.
+  if (req.session!.username) {
+    payload.searchParams.loggedInUser = req.session!.username;
   }
 
-  if (req.session!.username === undefined) {
+  // User is not logged in. Don't show "following" even if asked.
+  if (!req.session!.username) {
     payload.searchParams.following = false;
   }
+
   const searchResult = await Message.sendMessage(
     "search_queue",
     "SEARCH",
@@ -23,6 +26,10 @@ export async function search(req: Request, res: Response) {
   if (searchResult.status !== "OK") {
     res.json(requestError("Unable to get search results for this query."));
   } else {
-    res.json(searchResult);
+    res.json({
+      status: "OK",
+      message: searchResult.message,
+      items: searchResult.data.items
+    });
   }
 }
