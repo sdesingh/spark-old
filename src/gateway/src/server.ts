@@ -9,6 +9,7 @@ import env from "dotenv";
 import history from "connect-history-api-fallback";
 import { addMedia } from "./services/media/MediaController";
 const upload = multer({ dest: "../uploads" });
+env.config();
 
 process.on("uncaughtException", e => {
   console.log(e);
@@ -22,10 +23,9 @@ process.on("unhandledRejection", e => {
 
 class App {
   public app: express.Application;
-  public static PORT = 3000;
+  public static PORT = process.env.PORT!;
 
   constructor() {
-    env.config();
     this.app = express();
     this.config();
     this.listen();
