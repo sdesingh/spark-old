@@ -1,9 +1,10 @@
 import env from "dotenv";
 import amqplib, { Connection, Channel, ConsumeMessage } from "amqplib";
-import { controller } from "./UserController";
+import { controller } from "./SearchController";
 import { connectDb } from "./services/mongo";
 import Timer from "./services/timer";
 import { logger } from "./services/logging";
+import { statusError } from "./services/responseObjects";
 // Load environment vars.
 env.config();
 
@@ -31,8 +32,6 @@ async function consumeTaskRequests(msg: ConsumeMessage) {
   let reqAction = payload.actionName;
   let res: any;
 
-  // console.log("Received request\n" + JSON.stringify(payload));
-
   // Sent an invalid task.
   if (!controller[reqAction]) {
     res = await controller["INVALID"](payload);
@@ -41,20 +40,37 @@ async function consumeTaskRequests(msg: ConsumeMessage) {
   else {
     // Start timer for metrics.
     const t = new Timer();
+    try {
+      res = await controller[reqAction](payload);
 
-    res = await controller[reqAction](payload);
+      const log = {
+        message: `[${reqAction}]`,
+        result: res.status,
+        // payload: payload,
+        timestamp: new Date(),
+        time: t.stop()
+      };
 
-    // Stop timer. Log result.
-    logger.info({
-      message: `${reqAction}`,
-      result: res.status,
-      // payload: payload,
-      timestamp: new Date(),
-      time: t.stop()
-    });
+      // Stop timer. Log result.
+
+      if (res.status === "OK") {
+        logger.info(log);
+      } else {
+        logger.warn(log);
+      }
+    } catch (err) {
+      console.log(err);
+      res = statusError(`Unable to fulfill request ${reqAction}`);
+      // Stop timer. Log result.
+      logger.error({
+        message: `[${reqAction}]`,
+        result: res.status,
+        error: err,
+        timestamp: new Date(),
+        time: t.stop()
+      });
+    }
   }
-
-  // console.log("Finished work. Result:\n", JSON.stringify(res));
 
   // Send result back.
   channel.sendToQueue(

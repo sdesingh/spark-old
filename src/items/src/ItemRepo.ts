@@ -34,6 +34,20 @@ export async function addItem(
       itemid: createdItem._id
     });
 
+    const doc = {
+      id: createdItem._id,
+      parent: createdItem.parent,
+      hasMedia: createdItem.media.length !== 0,
+      timestamp: createdItem.timestamp,
+      likes: createdItem.likes,
+      retweeted: createdItem.retweeted,
+      type: createdItem.type,
+      user: createdItem.user,
+      content: createdItem.content
+    };
+
+    Message.sendMessage("search_queue", "INDEX_ITEM", { doc });
+
     if (result.status === "OK") {
       return statusOk("Successfully added item", { id: createdItem._id });
     } else {
@@ -45,7 +59,6 @@ export async function addItem(
   }
 }
 
-// TODO TODO TODO
 export async function deleteItem(username: string, itemid: string) {
   const item = await getItem(itemid);
 
@@ -65,7 +78,10 @@ export async function deleteItem(username: string, itemid: string) {
 
       if (result.status === "OK") {
         // Delete item from db.
-        await Item.findByIdAndDelete(itemid);
+        await Promise.all([
+          Item.findByIdAndDelete(itemid),
+          Message.sendMessage("search_queue", "DELETE_ITEM", { itemid })
+        ]);
         return statusOk(`Item with ID: ${itemid} successfully deleted.`);
       }
       // User was unable to delete the item.
@@ -92,7 +108,6 @@ export async function getItem(itemid: string) {
   }
 }
 
-// TODO TODO TODO
 export async function likeItem(
   username: string,
   itemid: string,
@@ -191,4 +206,9 @@ export async function getItemsByUser(username: string, limit?: number) {
       items
     });
   }
+}
+
+export async function reset() {
+  await Item.deleteMany({});
+  return statusOk(`Successfully deleted all items...`);
 }

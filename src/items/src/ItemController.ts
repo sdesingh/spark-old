@@ -49,5 +49,6 @@ export const controller: { [action: string]: Function } = {
   ADD_ITEM: addItem,
   DELETE_ITEM: deleteItem,
   LIKE_ITEM: likeItem,
-  INVALID: invalidRequest
+  INVALID: invalidRequest,
+  RESET: repo.reset
 };

@@ -9,7 +9,7 @@
     "start": "npx pm2 start pm2.yaml"
   },
   "devDependencies": {
-    "@types/node": "^12.11.1"
+    "@types/node": "^12.12.14"
   },
   "dependencies": {
     "@types/amqplib": "^0.5.13",

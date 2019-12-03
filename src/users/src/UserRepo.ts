@@ -160,6 +160,7 @@ export async function followUser(
   // Unfollow this user.
   else {
     // Check if already unfollowed.
+
     if (!user.following.includes(userToFollow._id)) {
       return statusOk("Already unfollowed this user.", null);
     }
@@ -244,7 +245,6 @@ export async function likeItem(
   }
 }
 
-// TODO TODO TODO
 export async function getUserFollowers(username: string, limit?: number) {
   const user = await getByUsername(username);
 
@@ -255,7 +255,15 @@ export async function getUserFollowers(username: string, limit?: number) {
     let itemLimit = limit === undefined ? 50 : limit;
     itemLimit = itemLimit > 200 ? 200 : itemLimit;
 
-    const followers = userFollowers.slice(0, itemLimit);
+    const followerIds = userFollowers.slice(0, itemLimit);
+    let followerUsers: any[] = [];
+    const followers: any[] = [];
+
+    followerIds.forEach((id: any) => followerUsers.push(getUserById(id)));
+
+    followerUsers = await Promise.all(followerUsers);
+
+    followerUsers.forEach((user: IUserModel) => followers.push(user.username));
 
     return statusOk(`Successfully retrieved ${username} followers.`, {
       followers
@@ -263,7 +271,6 @@ export async function getUserFollowers(username: string, limit?: number) {
   }
 }
 
-// TODO TODO TODO
 export async function getUserFollowing(username: string, limit?: number) {
   const user = await getByUsername(username);
 
@@ -274,10 +281,23 @@ export async function getUserFollowing(username: string, limit?: number) {
     let itemLimit = limit === undefined ? 50 : limit;
     itemLimit = itemLimit > 200 ? 200 : itemLimit;
 
-    const following = userFollowing.slice(0, itemLimit);
+    const followingIds = userFollowing.slice(0, itemLimit);
+    let followingUsers: any[] = [];
+    const following: any[] = [];
+
+    followingIds.forEach((id: any) => followingUsers.push(getUserById(id)));
+
+    followingUsers = await Promise.all(followingUsers);
+
+    followingUsers.forEach((user: IUserModel) => following.push(user.username));
 
     return statusOk(`Successfully retrieved ${username} following.`, {
       following
     });
   }
+}
+
+export async function reset() {
+  await User.deleteMany({});
+  return statusOk("Successfully deleted all users.");
 }

@@ -3,9 +3,12 @@ import http from "http";
 import middleware from "./middleware";
 import routes from "./services";
 import { applyMiddleware, applyRoutes } from "./utils";
+import multer from "multer";
 import errorHandlers from "./middleware/errorHandlers";
 import env from "dotenv";
 import history from "connect-history-api-fallback";
+import { addMedia } from "./services/media/MediaController";
+const upload = multer({ dest: "../uploads" });
 
 process.on("uncaughtException", e => {
   console.log(e);
@@ -30,6 +33,7 @@ class App {
 
   private config() {
     applyMiddleware(middleware, this.app);
+    this.setupUpload();
     applyRoutes(routes, this.app);
     this.setupSPA();
     applyMiddleware(errorHandlers, this.app);
@@ -46,6 +50,10 @@ class App {
     );
 
     this.app.use(staticFiles);
+  }
+
+  private setupUpload() {
+    this.app.post("/addmedia", upload.single("content"), addMedia);
   }
 
   listen() {

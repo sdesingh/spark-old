@@ -1,6 +1,6 @@
 import env from "dotenv";
 import amqplib, { Connection, Channel, ConsumeMessage } from "amqplib";
-import { controller } from "./UserController";
+import { controller } from "./MediaController";
 import { connectDb } from "./services/mongo";
 import Timer from "./services/timer";
 import { logger } from "./services/logging";
@@ -30,8 +30,6 @@ async function consumeTaskRequests(msg: ConsumeMessage) {
 
   let reqAction = payload.actionName;
   let res: any;
-
-  // console.log("Received request\n" + JSON.stringify(payload));
 
   // Sent an invalid task.
   if (!controller[reqAction]) {

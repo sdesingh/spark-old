@@ -1,12 +1,13 @@
 import { Document, Schema, Model, model } from "mongoose";
+import { IUserModel } from "./UserSchema";
 import { IMediaModel } from "./MediaSchema";
 
 export interface IItemModel extends Document {
-  user: String;
+  user: IUserModel;
   parent: IItemModel | null;
   type: ItemType;
   media: IMediaModel[];
-  timestamp: Number;
+  timestamp: Date;
   retweeted: number;
   likes: number;
   content: string;
@@ -18,12 +19,13 @@ export enum ItemType {
   REPLY = "reply"
 }
 
-let getDate = () => parseInt((new Date().getTime() / 1000).toFixed(0));
+let getDate = () => new Date();
 
 export var ItemSchema: Schema = new Schema({
   user: {
-    type: String,
-    required: true
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: "User"
   },
   parent: {
     type: Schema.Types.ObjectId,
@@ -34,10 +36,10 @@ export var ItemSchema: Schema = new Schema({
     type: String,
     required: true
   },
-  media: [{ type: String }],
+  media: [{ type: Schema.Types.ObjectId, ref: "Media" }],
   timestamp: {
-    type: Number,
-    default: getDate
+    type: Date,
+    default: getDate()
   },
   retweeted: {
     type: Number,

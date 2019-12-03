@@ -6,7 +6,7 @@ export interface IItemModel extends Document {
   parent: IItemModel | null;
   type: ItemType;
   media: IMediaModel[];
-  timestamp: Number;
+  timestamp: Date;
   retweeted: number;
   likes: number;
   content: string;
@@ -18,7 +18,7 @@ export enum ItemType {
   REPLY = "reply"
 }
 
-let getDate = () => parseInt((new Date().getTime() / 1000).toFixed(0));
+let getDate = () => new Date();
 
 export var ItemSchema: Schema = new Schema({
   user: {
@@ -36,8 +36,8 @@ export var ItemSchema: Schema = new Schema({
   },
   media: [{ type: String }],
   timestamp: {
-    type: Number,
-    default: getDate
+    type: Date,
+    default: getDate()
   },
   retweeted: {
     type: Number,
