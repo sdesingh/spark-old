@@ -18,9 +18,15 @@ const deleteItem = async (payload: any) => {
   return repo.deleteItem(payload.itemid);
 };
 
+const invalidRequest = () => {
+  logger.warn("Invalid request made.");
+  return statusError("Invalid Request Made...", null);
+};
+
 export const controller: { [action: string]: Function } = {
   SEARCH: search,
   INDEX_ITEM: indexItem,
   DELETE_ITEM: deleteItem,
-  RESET: repo.reset
+  RESET: repo.reset,
+  INVALID: invalidRequest
 };
