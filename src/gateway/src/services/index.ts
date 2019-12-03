@@ -7,13 +7,6 @@ import { sendMessage } from "./messaging";
 
 export default [
   {
-    path: "/",
-    method: "get",
-    handler: async (req: Request, res: Response) => {
-      res.json({ status: "OK", message: "Hello world!" });
-    }
-  },
-  {
     path: "/emit",
     method: "post",
     handler: async (req: Request, res: Response) => {
