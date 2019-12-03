@@ -122,7 +122,7 @@ export async function search(searchParams: any) {
 
 export async function indexItem(doc: any) {
   try {
-    const result = await client.index({
+    await client.index({
       index: "items",
       id: doc.id,
       refresh: "true",
@@ -137,7 +137,7 @@ export async function indexItem(doc: any) {
 }
 
 export async function deleteItem(itemid: string) {
-  await client.delete({
+  client.delete({
     index: "items",
     id: itemid,
     refresh: "true"

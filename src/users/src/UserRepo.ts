@@ -191,7 +191,7 @@ export async function addItem(username: string, itemid: string) {
     }
 
     user.items.push(itemid);
-    await user.save();
+    user.save();
 
     return statusOk("Item added successfully.");
   }

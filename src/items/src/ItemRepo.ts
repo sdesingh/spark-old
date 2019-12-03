@@ -67,7 +67,7 @@ export async function addItem(
     const createdItem = await Item.create(itemDoc);
 
     // Add item to the user.
-    await Message.sendMessage("user_queue", "ADD_ITEM", {
+    Message.sendMessage("user_queue", "ADD_ITEM", {
       username,
       itemid: createdItem._id
     });
@@ -91,7 +91,7 @@ export async function addItem(
       content: createdItem.content
     };
 
-    await Message.sendMessage("search_queue", "INDEX_ITEM", { doc });
+    Message.sendMessage("search_queue", "INDEX_ITEM", { doc });
 
     // Associate media items.
     const associateRequests: any[] = [];
@@ -125,7 +125,7 @@ export async function deleteItem(username: string, itemid: string) {
     // Item owned by user. Delete.
     if (item.user === username) {
       // Delete item from user.
-      await Message.sendMessage("user_queue", "DELETE_ITEM", {
+      Message.sendMessage("user_queue", "DELETE_ITEM", {
         username,
         itemid
       });
@@ -134,7 +134,7 @@ export async function deleteItem(username: string, itemid: string) {
       if (item.type === ItemType.RETWEET) {
         const parentItem = await Item.findById(item.parent);
         parentItem!.retweeted -= 1;
-        parentItem!.save().then(val => {});
+        parentItem!.save();
       }
 
       // Delete all associated media items.

@@ -2,7 +2,6 @@ import * as repo from "./SearchRepo";
 import { logger } from "./services/logging";
 import Timer from "./services/timer";
 import { statusError, statusOk } from "./services/responseObjects";
-import * as Message from "./services/messaging";
 
 const search = async (payload: any) => {
   return repo.search(payload.searchParams);
