@@ -46,7 +46,9 @@ export async function addItem(
         return statusError(
           `Media with ID: ${item._id} is already being used by another item.`
         );
-      } else if (item.uploadedBy !== username) {
+      }
+
+      if (item.uploadedBy !== username) {
         return statusError(
           `Media with ID: ${item._id} is owned by another user.`
         );
