@@ -70,7 +70,7 @@ export async function addItem(
     Message.sendMessage("user_queue", "ADD_ITEM", {
       username,
       itemid: createdItem._id
-    });
+    }).then(val => {});
 
     if (createdItem.type === ItemType.RETWEET) {
       const parentItem = await Item.findById(parentid);
@@ -91,7 +91,7 @@ export async function addItem(
       content: createdItem.content
     };
 
-    Message.sendMessage("search_queue", "INDEX_ITEM", { doc });
+    Message.sendMessage("search_queue", "INDEX_ITEM", { doc }).then(val => {});
 
     // Associate media items.
     const associateRequests: any[] = [];
@@ -128,7 +128,7 @@ export async function deleteItem(username: string, itemid: string) {
       Message.sendMessage("user_queue", "DELETE_ITEM", {
         username,
         itemid
-      });
+      }).then(val => {});
 
       // Reduce number of retweets.
       if (item.type === ItemType.RETWEET) {
