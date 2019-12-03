@@ -42,7 +42,7 @@ export async function addItem(
 
       const item = itemResult.data.media;
 
-      if (item.itemAssociatedWith !== null) {
+      if (item.itemAssociatedWith) {
         return statusError(
           `Media with ID: ${item._id} is already being used by another item.`
         );
