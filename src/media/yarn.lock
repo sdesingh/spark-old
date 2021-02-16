@@ -1552,9 +1552,9 @@ supports-color@^5.3.0:
     has-flag "^3.0.0"
 
 systeminformation@^4.14.11:
-  version "4.14.15"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-4.14.15.tgz#cb487386f1aa2106f59545f8a7d4cb741a7ba383"
-  integrity sha512-F3medG1jJSTpZ3fruekMrL3MusyB5MEoIfat/z1yyd9EBH54jzxrz0OJZoBJdjqeVdLQheOf5LHhq8suVLi6Zw==
+  version "4.34.13"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-4.34.13.tgz#4d6bdf451369aa137e7b445bf700ba5b82dd6fa0"
+  integrity sha512-K3h3ofFOvXgsGAoACcGEG+T+X9Kq1xRk1bJS+p6JOd2U4mDFkIOW03u2wSCcVMuCq/NsM/piALNt1u3DrQftlw==
 
 text-hex@1.0.x:
   version "1.0.0"
